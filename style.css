@@ -1,0 +1,309 @@
+/* Shared by the board and the message page.
+   Palette and type: deep emerald banner, forest
+   green ink, cream paper, blush botanicals.
+
+   Deliberately light-only. The people using this are on all sorts of
+   devices, and a board that looks the same on every one of them is
+   worth more here than one that follows the system theme.
+
+   On contrast: the coral banner is decoration, and only large display
+   type sits on it. Everything anyone has to read or operate — messages,
+   labels, fields, buttons — sits on cream or white in dark green ink. */
+
+:root {
+  color-scheme: light;
+
+  --paper: #faf5ea;
+  --card: #ffffff;
+  --emerald: #115740;     /* the banner */
+  --forest: #1b3a28;      /* ink, buttons, slideshow — the invitation's "90" */
+  --forest-light: #2f5540;
+  --coral: #e8705f;       /* now an accent only: the blossoms */
+  --ink: #253529;
+  --ink-soft: #5f6b60;
+  --ink-faint: #8d9589;
+  --rule: #e7dfd0;
+  --blush: #f7ded4;
+  --sage: #93a882;
+  --focus: #1f6feb;
+
+  --display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --serif: 'Lora', Georgia, 'Times New Roman', serif;
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ───────────── the coral banner ───────────── */
+
+.masthead {
+  background: var(--emerald);
+  color: #fff;
+  text-align: center;
+  padding: 64px 24px 56px;
+}
+
+/* The invitation's small type: wide-tracked caps. Kept at 20px so it
+   stays large enough to read comfortably against the coral. */
+.eyebrow {
+  margin: 0 0 18px;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+}
+
+.masthead h1 {
+  font-family: var(--display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(44px, 8vw, 86px);
+  line-height: 1.05;
+  margin: 0;
+  letter-spacing: -0.005em;
+}
+
+.occasion {
+  margin: 20px 0 0;
+  font-size: clamp(17px, 2.2vw, 20px);
+  font-weight: 400;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+/* The lede is sentence case — the tracked caps above and below it are
+   enough ceremony, and an all-caps sentence reads as shouting. */
+.lede {
+  margin: 18px 0 0;
+  font-size: clamp(17px, 2.2vw, 20px);
+  color: #fff;
+}
+
+.sprig {
+  display: block;
+  width: 220px;
+  max-width: 70%;
+  height: auto;
+  margin: 28px auto 0;
+  color: #cfe3cf; /* foliage, on green */
+}
+
+/* ───────────── buttons ───────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 60px;
+  padding: 16px 32px;
+  font-family: var(--sans);
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: .04em;
+  color: #fff;
+  background: var(--forest);
+  border: 2px solid var(--forest);
+  border-radius: 999px;
+  cursor: pointer;
+  text-decoration: none;
+  -webkit-appearance: none;
+}
+
+.btn:hover { background: var(--forest-light); border-color: var(--forest-light); }
+.btn:active { transform: translateY(1px); }
+.btn[disabled] { opacity: .55; cursor: default; transform: none; }
+
+.btn-quiet {
+  color: var(--forest);
+  background: transparent;
+}
+.btn-quiet:hover { background: #eae6d8; }
+
+/* On the coral banner: solid white reads cleanly, outline for the second. */
+.masthead .btn { background: #fff; border-color: #fff; color: var(--forest); }
+.masthead .btn:hover { background: var(--paper); border-color: var(--paper); }
+.masthead .btn-quiet { background: transparent; border-color: #fff; color: #fff; }
+.masthead .btn-quiet:hover { background: rgba(255, 255, 255, .16); }
+
+.btn-block { width: 100%; }
+
+/* ───────────── the board ───────────── */
+
+.board {
+  columns: 3 330px;
+  column-gap: 26px;
+  padding-bottom: 80px;
+}
+
+.note {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  page-break-inside: avoid;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 28px 30px 26px;
+  margin: 0 0 26px;
+  box-shadow: 0 1px 3px rgba(37, 53, 41, .05);
+}
+
+.note figure { margin: -28px -30px 24px; }
+
+.note img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 3px 3px 0 0;
+  background: var(--blush);
+}
+
+.note .words {
+  font-family: var(--serif);
+  font-size: 20px;
+  line-height: 1.68;
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.note .from {
+  margin: 22px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--rule);
+  font-size: 15px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.note .from strong { font-weight: 600; color: var(--forest); }
+
+/* ───────────── states ───────────── */
+
+.state {
+  text-align: center;
+  padding: 72px 20px;
+  color: var(--ink-soft);
+  font-size: 19px;
+}
+
+.state strong {
+  display: block;
+  font-family: var(--display);
+  font-size: 26px;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+/* ───────────── slideshow ───────────── */
+
+.show {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--forest);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.show[hidden] { display: none; }
+
+.show-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 40px 28px;
+  text-align: center;
+  overflow: auto;
+}
+
+.show-stage img {
+  max-width: min(680px, 100%);
+  max-height: 46vh;
+  border-radius: 3px;
+}
+
+.show-stage .words {
+  font-family: var(--serif);
+  font-size: clamp(22px, 3.4vw, 34px);
+  line-height: 1.5;
+  max-width: 880px;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.show-stage .from {
+  font-size: clamp(14px, 1.7vw, 17px);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--blush);
+  margin: 0;
+}
+
+.show-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 18px;
+  border-top: 1px solid rgba(255, 255, 255, .18);
+}
+
+.show-bar button {
+  min-height: 52px;
+  min-width: 52px;
+  padding: 10px 24px;
+  font-family: var(--sans);
+  font-size: 16px;
+  letter-spacing: .08em;
+  color: #fff;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, .4);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.show-bar button:hover { background: rgba(255, 255, 255, .14); }
+.show-count { color: var(--blush); font-size: 15px; letter-spacing: .1em; min-width: 76px; }
+
+/* ───────────── printing ───────────── */
+
+@media print {
+  body { background: #fff; }
+  .masthead { background: #fff; color: var(--ink); padding: 0 0 24px; }
+  .masthead h1 { color: var(--ink); }
+  .eyebrow, .occasion { color: var(--ink-soft); }
+  .sprig { color: var(--sage) !important; }
+  .board { columns: 2 280px; padding: 0; }
+  .note { border: 1px solid #ddd; box-shadow: none; }
+  .no-print, .show { display: none !important; }
+}

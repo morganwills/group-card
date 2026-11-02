@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Group card</title>
+
+<!-- The card people see when this link lands in a text or an email.
+     og:image has to be an absolute URL — scrapers do not run the page's
+     JavaScript, so none of this can come from config.js, and all four
+     URLs below need changing by hand if the site ever moves. -->
+<meta name="description" content="Add your message to the board for the guest of honour. No sign-up, no password.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="A group card">
+<meta property="og:description" content="Add your message to the board for the occasion. No sign-up, no password.">
+<meta property="og:image" content="https://YOUR-SITE.netlify.app/preview.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A group card">
+<meta property="og:url" content="https://YOUR-SITE.netlify.app/">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+    margin-top: 34px;
+  }
+  .count {
+    text-align: center;
+    font-size: 14px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 40px 0 34px;
+  }
+  .endnote {
+    text-align: center;
+    padding: 20px 20px 90px;
+  }
+  .endnote[hidden] { display: none; }
+  .endnote p {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 27px;
+    color: var(--forest);
+    margin: 0 0 22px;
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <p class="eyebrow" id="eyebrow"></p>
+  <h1 id="title">Group card</h1>
+  <p class="occasion" id="occasion"></p>
+
+  <svg class="sprig" viewBox="0 0 220 48" aria-hidden="true" focusable="false">
+    <g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+      <path d="M8 24C38 24 58 24 84 24"/>
+      <path d="M212 24C182 24 162 24 136 24"/>
+      <path d="M34 24c4-8 12-11 18-10"/>
+      <path d="M52 24c4 8 12 11 18 10"/>
+      <path d="M186 24c-4-8-12-11-18-10"/>
+      <path d="M168 24c-4 8-12 11-18 10"/>
+    </g>
+    <g fill="currentColor">
+      <ellipse cx="52" cy="14" rx="9" ry="4.6" transform="rotate(-20 52 14)"/>
+      <ellipse cx="70" cy="34" rx="9" ry="4.6" transform="rotate(20 70 34)"/>
+      <ellipse cx="168" cy="14" rx="9" ry="4.6" transform="rotate(20 168 14)"/>
+      <ellipse cx="150" cy="34" rx="9" ry="4.6" transform="rotate(-20 150 34)"/>
+    </g>
+    <g>
+      <circle cx="96" cy="26" r="7.5" fill="#f6c3ae"/>
+      <circle cx="124" cy="26" r="7.5" fill="#f6c3ae"/>
+      <circle cx="110" cy="19" r="10" fill="#fde9de"/>
+      <circle cx="96" cy="26" r="2.4" fill="#c9603f"/>
+      <circle cx="124" cy="26" r="2.4" fill="#c9603f"/>
+      <circle cx="110" cy="19" r="3.2" fill="#c9603f"/>
+    </g>
+  </svg>
+
+  <div class="actions no-print">
+    <a class="btn" href="add.html">Add your message</a>
+    <button type="button" class="btn btn-quiet" id="playBtn" hidden>Play as a slideshow</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="count" id="count"></p>
+  <div class="state" id="state">Loading the messages…</div>
+  <div class="board" id="board"></div>
+
+  <!-- Someone who reads to the bottom should find an invitation there,
+       not the end of the page. Only shown once there is something to read. -->
+  <div class="endnote no-print" id="endnote" hidden>
+    <p>Add yours to the board.</p>
+    <a class="btn" href="add.html">Add your message</a>
+  </div>
+</main>
+
+<div class="show" id="show" hidden role="dialog" aria-modal="true" aria-label="Slideshow">
+  <div class="show-stage" id="stage"></div>
+  <div class="show-bar">
+    <button type="button" id="prevBtn" aria-label="Previous message">‹ Back</button>
+    <button type="button" id="pauseBtn">Pause</button>
+    <span class="show-count" id="showCount"></span>
+    <button type="button" id="nextBtn" aria-label="Next message">Next ›</button>
+    <button type="button" id="closeBtn">Close</button>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  var cfg = window.CONFIG || {};
+  var board = document.getElementById('board');
+  var state = document.getElementById('state');
+  var count = document.getElementById('count');
+  var playBtn = document.getElementById('playBtn');
+  var endnote = document.getElementById('endnote');
+
+  var messages = [];
+
+  if (cfg.eyebrow) document.getElementById('eyebrow').textContent = cfg.eyebrow;
+  if (cfg.title) {
+    document.getElementById('title').textContent = cfg.title;
+    document.title = cfg.title;
+  }
+  if (cfg.occasion) document.getElementById('occasion').textContent = cfg.occasion;
+
+  function setState(heading, detail) {
+    board.innerHTML = '';
+    state.innerHTML = '';
+    if (heading) {
+      var strong = document.createElement('strong');
+      strong.textContent = heading;
+      state.appendChild(strong);
+    }
+    if (detail) state.appendChild(document.createTextNode(detail));
+    state.style.display = 'block';
+  }
+
+  /* Messages are typed by other people, so every value goes in through
+     textContent. Nothing here ever builds HTML from a string. */
+  function noteFor(m) {
+    var note = document.createElement('article');
+    note.className = 'note';
+
+    if (m.photo) {
+      var figure = document.createElement('figure');
+      var img = document.createElement('img');
+      img.src = m.photo;
+      img.alt = 'Photo from ' + m.name;
+      img.loading = 'lazy';
+      img.addEventListener('error', function () { figure.remove(); });
+      figure.appendChild(img);
+      note.appendChild(figure);
+    }
+
+    if (m.message) {
+      var words = document.createElement('p');
+      words.className = 'words';
+      words.textContent = m.message;
+      note.appendChild(words);
+    }
+
+    var from = document.createElement('p');
+    from.className = 'from';
+    var who = document.createElement('strong');
+    who.textContent = m.name;
+    from.appendChild(document.createTextNode('— '));
+    from.appendChild(who);
+    note.appendChild(from);
+
+    return note;
+  }
+
+  function render() {
+    board.innerHTML = '';
+
+    if (!messages.length) {
+      setState('No messages yet.', 'Be the first to add one.');
+      count.textContent = '';
+      playBtn.hidden = true;
+      endnote.hidden = true;
+      return;
+    }
+
+    state.style.display = 'none';
+    playBtn.hidden = false;
+    endnote.hidden = false;
+    count.textContent = messages.length === 1
+      ? '1 message'
+      : messages.length + ' messages';
+
+    var fragment = document.createDocumentFragment();
+    messages.forEach(function (m) { fragment.appendChild(noteFor(m)); });
+    board.appendChild(fragment);
+  }
+
+  function load() {
+    if (!cfg.apiUrl) {
+      setState('Not connected yet.', ' Paste your Apps Script URL into config.js — the README has the steps.');
+      return;
+    }
+
+    return fetch(cfg.apiUrl, { method: 'GET' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('http');
+        return res.json();
+      })
+      .then(function (out) {
+        if (!out.ok) throw new Error(out.error || 'api');
+        messages = out.messages || [];
+        render();
+      })
+      .catch(function () {
+        if (messages.length) return; // a failed refresh leaves the board as it was
+        setState('The messages could not be loaded.', ' Check the connection and reload the page.');
+      });
+  }
+
+  load();
+
+  // Keep the board current during an event without anyone touching it.
+  setInterval(function () {
+    if (document.visibilityState === 'visible') load();
+  }, 90000);
+
+  /* ───────────── slideshow ───────────── */
+
+  var show = document.getElementById('show');
+  var stage = document.getElementById('stage');
+  var showCount = document.getElementById('showCount');
+  var pauseBtn = document.getElementById('pauseBtn');
+  var at = 0;
+  var timer = null;
+
+  function paint() {
+    var m = messages[at];
+    stage.innerHTML = '';
+    if (!m) return;
+
+    if (m.photo) {
+      var img = document.createElement('img');
+      img.src = m.photo;
+      img.alt = 'Photo from ' + m.name;
+      img.addEventListener('error', function () { img.remove(); });
+      stage.appendChild(img);
+    }
+    if (m.message) {
+      var words = document.createElement('p');
+      words.className = 'words';
+      words.textContent = m.message;
+      stage.appendChild(words);
+    }
+    var from = document.createElement('p');
+    from.className = 'from';
+    from.textContent = '— ' + m.name;
+    stage.appendChild(from);
+
+    showCount.textContent = (at + 1) + ' of ' + messages.length;
+  }
+
+  function step(by) {
+    if (!messages.length) return;
+    at = (at + by + messages.length) % messages.length;
+    paint();
+  }
+
+  function play() {
+    stop();
+    timer = setInterval(function () { step(1); }, 8000);
+    pauseBtn.textContent = 'Pause';
+  }
+
+  function stop() {
+    if (timer) clearInterval(timer);
+    timer = null;
+  }
+
+  playBtn.addEventListener('click', function () {
+    if (!messages.length) return;
+    at = 0;
+    paint();
+    show.hidden = false;
+    play();
+    document.getElementById('closeBtn').focus();
+  });
+
+  document.getElementById('closeBtn').addEventListener('click', function () {
+    stop();
+    show.hidden = true;
+    playBtn.focus();
+  });
+
+  document.getElementById('nextBtn').addEventListener('click', function () { step(1); if (timer) play(); });
+  document.getElementById('prevBtn').addEventListener('click', function () { step(-1); if (timer) play(); });
+
+  pauseBtn.addEventListener('click', function () {
+    if (timer) { stop(); pauseBtn.textContent = 'Play'; }
+    else play();
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (show.hidden) return;
+    if (event.key === 'Escape') document.getElementById('closeBtn').click();
+    if (event.key === 'ArrowRight') document.getElementById('nextBtn').click();
+    if (event.key === 'ArrowLeft') document.getElementById('prevBtn').click();
+  });
+})();
+</script>
+
+</body>
+</html>

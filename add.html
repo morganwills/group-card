@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Add your message</title>
+
+<!-- See the note in index.html: these URLs are absolute on purpose and
+     must be changed by hand if the site moves. -->
+<meta name="description" content="Write a message for the guest of honour. No sign-up, no password.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="A group card">
+<meta property="og:description" content="Write your message for the occasion. No sign-up, no password.">
+<meta property="og:image" content="https://YOUR-SITE.netlify.app/preview.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A group card">
+<meta property="og:url" content="https://YOUR-SITE.netlify.app/add.html">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .sheet {
+    max-width: 680px;
+    margin: 44px auto 80px;
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 40px 36px 44px;
+    box-shadow: 0 2px 10px rgba(37, 53, 41, .06);
+  }
+
+  .field { margin-bottom: 32px; }
+
+  .field label {
+    display: block;
+    font-size: 21px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .field .hint {
+    font-size: 17px;
+    color: var(--ink-soft);
+    margin: 0 0 12px;
+  }
+
+  input[type=text], textarea {
+    width: 100%;
+    font-family: var(--sans);
+    font-size: 20px;
+    line-height: 1.5;
+    color: var(--ink);
+    background: #fffdf8;
+    border: 2px solid #ddd4c2;
+    border-radius: 4px;
+    padding: 16px 18px;
+    -webkit-appearance: none;
+  }
+
+  input[type=text] { min-height: 60px; }
+  textarea { min-height: 190px; resize: vertical; }
+  input[type=text]:focus, textarea:focus { border-color: var(--forest); }
+
+  /* The real file input stays in the page for screen readers and
+     keyboards, but the label is what people actually tap. */
+  .photo-input {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0);
+    white-space: nowrap; border: 0;
+  }
+
+  /* Two classes, so this beats the plainer `.field label` rule above
+     and the button actually centres its text. */
+  .field .photo-pick {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 72px;
+    margin: 0;
+    border: 2px dashed #cdbfab;
+    border-radius: 4px;
+    background: #fffdf8;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--forest);
+    cursor: pointer;
+  }
+
+  .field .photo-pick:hover { background: var(--blush); border-color: var(--forest); }
+  .field .photo-input:focus-visible + .photo-pick { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  .photo-preview { display: none; }
+  .photo-preview img { width: 100%; border-radius: 4px; display: block; }
+  .photo-preview .row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin-top: 12px;
+  }
+  .photo-preview .size { font-size: 16px; color: var(--ink-soft); }
+
+  .error {
+    display: none;
+    font-size: 18px;
+    color: #8f2d1d;
+    background: #fdeee9;
+    border: 1px solid #f0c3b6;
+    border-radius: 4px;
+    padding: 14px 16px;
+    margin-bottom: 24px;
+  }
+
+  .busy { font-size: 18px; color: var(--ink-soft); text-align: center; margin-top: 16px; }
+
+  .reassure {
+    font-size: 16px;
+    color: var(--ink-faint);
+    text-align: center;
+    margin: 16px 0 0;
+  }
+
+  .setup-warning {
+    display: none;
+    background: #fdf5df;
+    border: 1px solid #ecd9a2;
+    border-radius: 4px;
+    padding: 16px 18px;
+    font-size: 17px;
+    margin-bottom: 28px;
+  }
+
+  .done { display: none; text-align: center; }
+  .done h2 {
+    font-family: var(--display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: 40px;
+    color: var(--forest);
+    margin: 0 0 10px;
+  }
+  .done p { font-size: 19px; color: var(--ink-soft); margin: 0 0 28px; }
+  .done .actions { display: flex; flex-direction: column; gap: 14px; align-items: stretch; }
+
+  @media (min-width: 560px) {
+    .done .actions { flex-direction: row; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <p class="eyebrow" id="forWhom"></p>
+  <h1 id="invitation">Add your message</h1>
+  <p class="lede" id="invitationNote">It takes a minute. No sign-up, no password.</p>
+
+  <svg class="sprig" viewBox="0 0 220 48" aria-hidden="true" focusable="false">
+    <g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+      <path d="M8 24C38 24 58 24 84 24"/>
+      <path d="M212 24C182 24 162 24 136 24"/>
+      <path d="M34 24c4-8 12-11 18-10"/>
+      <path d="M52 24c4 8 12 11 18 10"/>
+      <path d="M186 24c-4-8-12-11-18-10"/>
+      <path d="M168 24c-4 8-12 11-18 10"/>
+    </g>
+    <g fill="currentColor">
+      <ellipse cx="52" cy="14" rx="9" ry="4.6" transform="rotate(-20 52 14)"/>
+      <ellipse cx="70" cy="34" rx="9" ry="4.6" transform="rotate(20 70 34)"/>
+      <ellipse cx="168" cy="14" rx="9" ry="4.6" transform="rotate(20 168 14)"/>
+      <ellipse cx="150" cy="34" rx="9" ry="4.6" transform="rotate(-20 150 34)"/>
+    </g>
+    <g>
+      <circle cx="96" cy="26" r="7.5" fill="#f6c3ae"/>
+      <circle cx="124" cy="26" r="7.5" fill="#f6c3ae"/>
+      <circle cx="110" cy="19" r="10" fill="#fde9de"/>
+      <circle cx="96" cy="26" r="2.4" fill="#c9603f"/>
+      <circle cx="124" cy="26" r="2.4" fill="#c9603f"/>
+      <circle cx="110" cy="19" r="3.2" fill="#c9603f"/>
+    </g>
+  </svg>
+</header>
+
+<main class="wrap">
+  <div class="sheet">
+
+    <div class="setup-warning" id="setupWarning">
+      <strong>Not connected yet.</strong> Open <code>config.js</code> and paste in the two
+      settings from the README. Until then, messages cannot be saved.
+    </div>
+
+    <form id="form" novalidate>
+      <p class="error" id="error" role="alert"></p>
+
+      <div class="field">
+        <label for="name">Your name</label>
+        <p class="hint">So they know who it is from.</p>
+        <input type="text" id="name" name="name" autocomplete="name" maxlength="80" required>
+      </div>
+
+      <div class="field">
+        <label for="message">Your message</label>
+        <p class="hint">Say as much or as little as you like.</p>
+        <textarea id="message" name="message" maxlength="4000" required></textarea>
+      </div>
+
+      <div class="field">
+        <label for="photo">A photo, if you have one</label>
+        <p class="hint">Optional. It can be a photo of the two of you, or anything at all.</p>
+
+        <input type="file" id="photo" class="photo-input" accept="image/*">
+        <label for="photo" class="photo-pick" id="photoPick">Choose a photo</label>
+
+        <div class="photo-preview" id="photoPreview">
+          <img id="photoImg" alt="The photo you chose">
+          <div class="row">
+            <span class="size" id="photoSize"></span>
+            <button type="button" class="btn btn-quiet" id="photoRemove">Remove photo</button>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-block" id="send">Send my message</button>
+      <p class="reassure">Press Send and you are done.</p>
+      <p class="busy" id="busy" role="status" aria-live="polite"></p>
+    </form>
+
+    <div class="done" id="done">
+      <h2>Thank you</h2>
+      <p>Your message has been added.</p>
+      <div class="actions">
+        <a class="btn" href="index.html">See the whole board</a>
+        <button type="button" class="btn btn-quiet" id="again">Add another message</button>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  var cfg = window.CONFIG || {};
+  var form = document.getElementById('form');
+  var done = document.getElementById('done');
+  var errorBox = document.getElementById('error');
+  var busy = document.getElementById('busy');
+  var sendBtn = document.getElementById('send');
+
+  var photoInput = document.getElementById('photo');
+  var photoPick = document.getElementById('photoPick');
+  var preview = document.getElementById('photoPreview');
+  var previewImg = document.getElementById('photoImg');
+  var previewSize = document.getElementById('photoSize');
+
+  var chosenPhoto = null;
+
+  if (cfg.title) document.getElementById('forWhom').textContent = 'For ' + cfg.title;
+  if (cfg.invitation) {
+    document.getElementById('invitation').textContent = cfg.invitation;
+    document.title = cfg.invitation;
+  }
+  if (cfg.invitationNote) document.getElementById('invitationNote').textContent = cfg.invitationNote;
+
+  var ready = cfg.apiUrl && cfg.cloudinary && cfg.cloudinary.cloudName && cfg.cloudinary.uploadPreset;
+  if (!ready) document.getElementById('setupWarning').style.display = 'block';
+
+  function showError(text) {
+    errorBox.textContent = text;
+    errorBox.style.display = 'block';
+    errorBox.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
+  function clearError() {
+    errorBox.style.display = 'none';
+  }
+
+  function focusQuietly(el) {
+    try {
+      el.focus({ preventScroll: true });
+    } catch (e) {
+      el.focus(); // older Safari ignores the option
+    }
+  }
+
+  /* Shrink the photo in the browser before it goes anywhere. A photo
+     straight off a phone is often 4-6 MB, which is where uploads stall
+     on a weak connection. FileReader and <img> are used rather than
+     createImageBitmap so this still works on older iPads. */
+  function shrink(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onerror = function () { reject(new Error('read')); };
+      reader.onload = function () {
+        var img = new Image();
+        img.onerror = function () { reject(new Error('decode')); };
+        img.onload = function () {
+          var max = cfg.photoMaxEdge || 1600;
+          var scale = Math.min(1, max / Math.max(img.width, img.height));
+          var w = Math.round(img.width * scale);
+          var h = Math.round(img.height * scale);
+
+          var canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+
+          canvas.toBlob(function (blob) {
+            blob ? resolve(blob) : reject(new Error('encode'));
+          }, 'image/jpeg', cfg.photoQuality || 0.82);
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  photoInput.addEventListener('change', function () {
+    var file = photoInput.files && photoInput.files[0];
+    if (!file) return;
+
+    clearError();
+    photoPick.textContent = 'Getting the photo ready…';
+
+    shrink(file).then(function (blob) {
+      chosenPhoto = blob;
+      previewImg.src = URL.createObjectURL(blob);
+      previewSize.textContent = Math.round(blob.size / 1024) + ' KB';
+      preview.style.display = 'block';
+      photoPick.style.display = 'none';
+      photoPick.textContent = 'Choose a photo';
+    }).catch(function () {
+      photoPick.textContent = 'Choose a photo';
+      photoInput.value = '';
+      showError('That photo could not be opened. Try choosing it again, or send your message without one.');
+    });
+  });
+
+  document.getElementById('photoRemove').addEventListener('click', function () {
+    chosenPhoto = null;
+    photoInput.value = '';
+    preview.style.display = 'none';
+    photoPick.style.display = 'flex';
+  });
+
+  function uploadPhoto(blob, who) {
+    // Give the blob a filename. Without one it uploads as "blob" every
+    // time, and the Media Library becomes a wall of identical names with
+    // no way to tell whose photo is whose.
+    var named = who.toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 40) || 'photo';
+
+    var data = new FormData();
+    data.append('file', blob, named + '.jpg');
+    data.append('upload_preset', cfg.cloudinary.uploadPreset);
+
+    return fetch('https://api.cloudinary.com/v1_1/' + cfg.cloudinary.cloudName + '/image/upload', {
+      method: 'POST',
+      body: data
+    }).then(function (res) {
+      if (!res.ok) throw new Error('upload');
+      return res.json();
+    }).then(function (out) {
+      if (!out.secure_url) throw new Error('upload');
+      return out.secure_url;
+    });
+  }
+
+  function save(payload) {
+    // text/plain keeps this a "simple" request, so the browser does not
+    // send a preflight that Apps Script has no way of answering.
+    return fetch(cfg.apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    }).then(function (res) {
+      if (!res.ok) throw new Error('save');
+      return res.json();
+    }).then(function (out) {
+      if (!out.ok) throw new Error(out.error || 'save');
+      return out;
+    });
+  }
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    clearError();
+
+    var name = document.getElementById('name').value.trim();
+    var message = document.getElementById('message').value.trim();
+
+    // Focus the field first and keep it from scrolling, so the message
+    // explaining the problem is what ends up on screen. Getting this the
+    // other way round reads as "I pressed Send and nothing happened".
+    if (!name) {
+      focusQuietly(document.getElementById('name'));
+      showError('Please add your name first.');
+      return;
+    }
+    if (!message && !chosenPhoto) {
+      focusQuietly(document.getElementById('message'));
+      showError('Please write a message, or choose a photo.');
+      return;
+    }
+    if (!ready) {
+      showError('This board is not connected yet, so nothing can be saved. Please tell whoever sent you the link.');
+      return;
+    }
+
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Sending…';
+    busy.textContent = chosenPhoto ? 'Sending your photo. This can take a moment.' : 'Sending.';
+
+    var step = chosenPhoto ? uploadPhoto(chosenPhoto, name) : Promise.resolve('');
+
+    step.then(function (photoUrl) {
+      return save({ name: name, message: message, photo: photoUrl });
+    }).then(function () {
+      form.style.display = 'none';
+      done.style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }).catch(function (err) {
+      // Everything they typed is still on screen — never clear it.
+      var text = String(err && err.message || '');
+      showError(
+        text === 'upload'
+          ? 'The photo would not send. Check the connection and press Send again, or remove the photo and send just your words.'
+          : 'That did not send. Nothing has been lost — please press Send again.'
+      );
+    }).then(function () {
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'Send my message';
+      busy.textContent = '';
+    });
+  });
+
+  document.getElementById('again').addEventListener('click', function () {
+    document.getElementById('name').value = '';
+    document.getElementById('message').value = '';
+    chosenPhoto = null;
+    photoInput.value = '';
+    preview.style.display = 'none';
+    photoPick.style.display = 'flex';
+    done.style.display = 'none';
+    form.style.display = 'block';
+    clearError();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
+
+</body>
+</html>
